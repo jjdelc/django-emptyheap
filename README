@@ -1,0 +1,6 @@
+Django EmptyHeap
+================
+
+Aims to be a StackExchange like django implementation. It aims to be pluggable and simple to use (for the djangonaut, the end-user size id up to you).
+
+Depends on django-tagging
