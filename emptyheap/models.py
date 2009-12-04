@@ -18,6 +18,15 @@ class BaseModel(models.Model):
     class Meta:
         ordering = ('-added_on',)
 
+class HeapProfile(models.Model):
+    """
+    Represents an extension of auth's user in order to store other
+    properties
+    """
+    user = models.OneToOneField(User)
+    total_votes = models.PositiveIntegerField(default=0)
+
+
 class Message(BaseModel):
     """
     Represents a question or answer
@@ -29,7 +38,7 @@ class Message(BaseModel):
     body_html = models.TextField()
     up_votes = models.PositiveIntegerField(strings.UP_VOTE, default=0)
     down_votes = models.PositiveIntegerField(strings.DOWN_VOTE, default=0)
-    starred = models.BooleanField(default=False)
+    selecter_response = models.BooleanField(default=False)
     tags = TagField()
 
 class Comment(BaseModel):
