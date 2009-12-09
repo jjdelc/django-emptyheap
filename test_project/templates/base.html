@@ -7,8 +7,24 @@
     <body>
         <div id="header">
             <h1><a href="{% url eh_index %}" title="Go to Emptyheap index page">Emtpyheap</a></h1>
+            <ul>
+                <li><a href="{% url eh_index %}" title="Home">Home</a></li>
+                <li><a href="{% url eh_questions %}" title="All questions">All questions</a></li>
+                <li><a href="{% url eh_tags %}" title="Questions by tag">Tags</a></li>
+                <li><a href="{% url eh_unanswered %}" title="Unanswered questions">Unanswered</a></li>
+                <li><a href="{% url eh_ask %}" title="Ask a question">Ask</a></li>
+            </ul>
         </div>
-        <div id="content">{% block content %}{% endblock %}</div>
+        <div id="content">
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{message}}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% block content %}{% endblock %}
+        </div>
         <div id="sidebar">{% block sidebar %}{% endblock %}</div>
         <div id="footer"></div>
     </body>

@@ -6,7 +6,7 @@ from django.views.generic.list_detail import object_list
 from django.views.generic.simple import direct_to_template
 from django.contrib.auth.decorators import login_required
 
-from tagging.models import Tag
+from tagging.models import Tag, TaggedItem
 
 from emptyheap.models import Question, Answer
 from emptyheap.forms import QuestionForm, AnswerForm
@@ -33,15 +33,6 @@ def question_detail(request, question_id):
     })
 
 
-def tags(request):
-    """
-    Displays all question tags
-    """
-    tags = Tag.objects.cloud_for_model(Question, steps=5)
-    return object_list(request, tags, 
-        template_name='emptyheap/tag_list.html')
-
-
 @login_required
 def ask(request):
     """
@@ -61,3 +52,10 @@ def ask(request):
     return direct_to_template(request, 'emptyheap/ask.html', {
         'form': form
     })
+
+def tag_detail(request, tag_name):
+    """
+    Displays all the questions tagged something
+    """
+    tag = get_object_or_404(Tag, name=tag_name)
+    return object_list(request, TaggedItem.objects.get_by_model(Question, tag))

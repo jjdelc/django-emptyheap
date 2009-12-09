@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Questions by tag{% endblock %}
+{% block content %}
+<ul>
+    {% for tag in tags %}
+    <li><a href="{% url eh_tag_detail tag %}" title="Questions tagged {{tag}}">{{tag}}</a></li>
+    {% empty %}
+    <li>No tags</li>
+    {% endfor %}
+</ul>
+{% endblock %}
