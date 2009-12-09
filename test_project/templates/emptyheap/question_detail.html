@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{object}}{% endblock %}
+{% block content %}
+<h2>{{object}}</h2>
+<div class="question-body">
+    {{object.body_html|safe}}
+</div>
+<h3>Answers</h3>
+<ul>
+{% for answer in answers %}
+<li><blockquote>{{answer.body_html|safe}}</blockquote>
+<p>{{answer.user}}</p></li>
+{% empty %}
+<li>No answers</li>
+{% endfor %}
+</ul>
+<h3>Answer this question</h3>
+<form action="" method="post">
+    <table>
+        {{form}}
+        <tr><td/><td><input type="submit" value="Answer"/></td></tr>
+    </table>
+</form>
+{% endblock %}

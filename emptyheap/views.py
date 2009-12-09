@@ -1,41 +1,46 @@
 # -*- coding: utf 8 -*-
 
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.views.generic.list_detail import object_list
 from django.views.generic.simple import direct_to_template
 from django.contrib.auth.decorators import login_required
 
-from emptyheap.models import Entry
+from tagging.models import Tag
 
-def index(request):
-    """
-    The index view will display top questions
-    """
-    return object_list(request, Entry.objects.questions('-votes_result'))
-
-def questions(request):
-    """
-    Returns recent questions
-    """
-    return object_list(request, Entry.objects.questions())
-
-def unanswered(request):
-    """
-    returns unanswered questions
-    """
-    return object_list(request, Entry.objects.unanswered())
+from emptyheap.models import Question, Answer
+from emptyheap.forms import QuestionForm, AnswerForm
+from emptyheap import constants, strings
 
 def question_detail(request, question_id):
     """
     Displays a question's detail, comments and such
     """
-    return direct_to_template(request, '')
+    question = get_object_or_404(Question, pk=question_id)
+
+    form = AnswerForm()
+    if request.method == 'POST':
+        form = AnswerForm(request.POST)
+        if form.is_valid():
+            answer = form.save(question, request.user)
+            request.user.message_set.create(message=strings.ANSWER_SAVED)
+            return HttpResponseRedirect(question.get_absolute_url())
+
+    return direct_to_template(request, 'emptyheap/question_detail.html', {
+        'object': question,
+        'answers': question.answers.all(),
+        'form': form,
+    })
+
 
 def tags(request):
     """
     Displays all question tags
     """
-    return object_list(request, Tag)
+    tags = Tag.objects.cloud_for_model(Question, steps=5)
+    return object_list(request, tags, 
+        template_name='emptyheap/tag_list.html')
+
 
 @login_required
 def ask(request):
@@ -45,4 +50,14 @@ def ask(request):
     on POST:
         Validate and add the new question, then show question's detail
     """
-    return direct_to_template(request, '')
+    form = QuestionForm()
+    if request.method == 'POST':
+        form = QuestionForm(request.POST)
+        if form.is_valid():
+            question = form.save(request.user)
+            request.user.message_set.create(message=strings.QUESTION_CREATED)
+            return HttpResponseRedirect(question.get_absolute_url())
+
+    return direct_to_template(request, 'emptyheap/ask.html', {
+        'form': form
+    })

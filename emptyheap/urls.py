@@ -1,15 +1,19 @@
 # -*- coding: utf 8 -*-
 from django.conf.urls.defaults import url, patterns
+from django.views.generic.list_detail import object_list
 
 from emptyheap import views
+from emptyheap.models import Question
 
 urlpatterns = patterns('',
-    url(r'^/$',
-        views.index,
+    url(r'^$',
+        object_list,
+        {'queryset': Question.objects.get_top_questions()},
         name='eh_index'),
 
     url(r'^questions/$',
-        views.questions,
+        object_list,
+        {'queryset': Question.objects.all()},
         name='eh_questions'),
 
     url(r'^tags/$',
@@ -17,16 +21,9 @@ urlpatterns = patterns('',
         name='eh_tags'),
 
     url(r'^unanswered/$',
-        views.unanswered,
+        object_list,
+        {'queryset': Question.objects.unanswered()},
         name='eh_unanswered'),
-
-    url(r'^categories/$',
-        views.categories,
-        name='eh_categories'),
-
-    url(r'^categories/(P<category_slug>[-\w]+)/$',
-        views.category_detail,
-        name='eh_category_detail'),
 
     url(r'^ask/$',
         views.ask,

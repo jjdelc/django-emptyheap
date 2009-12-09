@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}
+Welcome to Emptyheap
+{% endblock %}
+{% block content %}
+<ul>
+{% for question in object_list %}
+<li><a href="{{question.get_absolute_url}}" title="{{question}}">{{question}}</a></li>
+{% empty %}
+<li>There are no questions, <a href="{% url eh_ask %}" title="Ask a question">Be the first to ask</a></li>
+{% endfor %}
+</ul>
+{% endblock %}

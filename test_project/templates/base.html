@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{% block title %}{% endblock %}</title>
+        <link href="{{MEDIA_URL}}css/main/css" rel="stylesheet" type="text/css"/>
+    </head>
+    <body>
+        <div id="header">
+            <h1><a href="{% url eh_index %}" title="Go to Emptyheap index page">Emtpyheap</a></h1>
+        </div>
+        <div id="content">{% block content %}{% endblock %}</div>
+        <div id="sidebar">{% block sidebar %}{% endblock %}</div>
+        <div id="footer"></div>
+    </body>
+</html>

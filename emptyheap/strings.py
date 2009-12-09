@@ -2,15 +2,16 @@
 
 from django.utils.translation import ugettext as _
 
-MESSAGE = _(u'Message')
-MESSAGE_PLURAL = _(u'Messages')
+QUESTION = _(u'Question')
+ANSWER = _(u'Answer')
 UP_VOTE = _(u'Up vote')
 UP_VOTE_PLURAL = _(u'Up votes')
 DOWN_VOTE = _(u'Down vote')
 DOWN_VOTE_PLURAL = _(u'Down votes')
-VOTES_RESULT = _(u'Votes result')
+VOTE_RESULT = _(u'Votes result')
 BODY = _(u'Body')
 COMMENT = _(u'Comment')
 COMMENT_PLURAL = _(u'Comments')
-ANSWERS_COUNT = _(u'Number of answers')
-
+ANSWER_COUNT = _(u'Number of answers')
+QUESTION_CREATED = _(u'Your question was created')
+ANSWER_SAVED = _(u'Your answer was saved')
