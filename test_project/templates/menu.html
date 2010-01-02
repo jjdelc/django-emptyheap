@@ -1,0 +1,14 @@
+<ul>
+<li><a href="{% url eh_index %}" title="Home">Home</a></li>
+<li><a href="{% url eh_questions %}" title="All questions">All questions</a></li>
+<li><a href="{% url eh_tags %}" title="Questions by tag">Tags</a></li>
+<li><a href="{% url eh_unanswered %}" title="Unanswered questions">Unanswered</a></li>
+<li><a href="{% url eh_ask %}" title="Ask a question">Ask</a></li>
+{% if user.is_authenticated %}
+<li><a href="{% url auth_logout %}" title="Log out">Log out</a></li>
+{% else %}
+<li><a href="{% url registration_register %}" title="Sign up">Sign up</a></li>
+<li><a href="{% url auth_login %}" title="Log in">Log in</a></li>
+{% endif %}
+</ul>
+
