@@ -1,15 +1,21 @@
-{% extends "base.html" %}
+{% extends "base.html" %}{% load emptyheap_tags %}
 {% block title %}{{object}}{% endblock %}
 {% block content %}
 <h2>{{object}}</h2>
-<div class="question-body">
+<blockquote class="question-body">
     {{object.body_html|safe}}
-</div>
+</blockquote>
 <h3>Answers</h3>
-<ul>
-{% for answer in answers %}
-<li><blockquote>{{answer.body_html|safe}}</blockquote>
-<p>{{answer.user}}</p></li>
+<p>Order answers by <a href="./" title="Show answers by number of votes">Votes</a>, <a href="?order_by=date" title="In posting date">Date</a></p>
+<ul id="answers">
+{% for answer in object_list %}
+<li>
+<blockquote>{{answer.body_html|safe}}</blockquote>
+<p>By {{answer.user}}, {{answer.added_on|timesince}} ago</p>
+<form method="POST" action="{% url answer_vote object.id, answer.id %}">
+    <p><input type="submit" name="direction" value="Up"/> {{answer.votes_result}} <input type="submit" name="direction" value="Down"/> {% if answer|has_upvote:user %}You've voted up{% else %}{% if answer|has_downvote:user %}You've voted down{% endif %}{% endif %}</p>
+</form>
+</li>
 {% empty %}
 <li>No answers</li>
 {% endfor %}
@@ -18,7 +24,7 @@
 <form action="" method="post">
     <table>
         {{form}}
-        <tr><td/><td><input type="submit" value="Answer"/></td></tr>
+        <tr><td/><td><input type="submit" {% if user.is_authenticated %}value="Answer"{% else %} value="Log in to reply" disabled="disabled"{% endif %}/></td></tr>
     </table>
 </form>
 {% endblock %}

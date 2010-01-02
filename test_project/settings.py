@@ -88,3 +88,5 @@ INSTALLED_APPS = (
     'registration',
     'tagging',
 )
+
+LOGIN_REDIRECT_URL = '/'

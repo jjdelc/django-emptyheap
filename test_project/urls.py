@@ -10,3 +10,13 @@ urlpatterns = patterns('',
     (r'^accounts/', include('registration.urls')),
     (r'^', include('emptyheap.urls')),
 )
+
+from django.conf import settings
+
+if settings.DEBUG:
+    from django.views.static import serve
+    urlpatterns += patterns('',
+        url(r'^static/(?P<path>.*)$',
+            serve,
+            {'document_root': settings.MEDIA_ROOT, 'show_indexes': True})
+        )

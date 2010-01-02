@@ -19,6 +19,34 @@ class BaseModel(models.Model):
 
     class Meta:
         ordering = ('-added_on',)
+        abstract = True
+
+class BaseVotedModel(models.Model):
+    """
+    Inherit from this model so your model can be voted up and down
+    """
+    up_votes = models.PositiveIntegerField(strings.UP_VOTE, default=0)
+    down_votes = models.PositiveIntegerField(strings.DOWN_VOTE, default=0)
+    votes_result = models.IntegerField(strings.VOTE_RESULT, default=0)
+
+    class Meta:
+        abstract = True
+
+    def total_votes(self):
+        return self.up_votes + self.down_votes
+
+    def update_votes(self, commit=True):
+        """
+        Updates votes counts
+        if commit is set to True will save the questions
+        """
+        self.up_votes = self.votes.up().count()
+        self.down_votes = self.votes.down().count()
+        self.votes_result = self.up_votes - self.down_votes
+
+        if commit:
+            super(self.__class__, self).save(*args, **kwargs)
+
 
 class Reputation(models.Model):
     """
@@ -27,6 +55,7 @@ class Reputation(models.Model):
     """
     user = models.OneToOneField(User)
     total_votes = models.PositiveIntegerField(default=0)
+
 
 class QuestionManager(models.Manager):
     def get_top_questions(self):
@@ -41,17 +70,14 @@ class QuestionManager(models.Manager):
         """
         return self.filter(answers_count=0).order_by(order_by)
 
-class Question(BaseModel):
+
+class Question(BaseModel, BaseVotedModel):
     """
     Represents a question 
     """
     title = models.CharField(strings.QUESTION, max_length=128)
     body = models.TextField(strings.BODY)
     body_html = models.TextField()
-
-    up_votes = models.PositiveIntegerField(strings.UP_VOTE, default=0)
-    down_votes = models.PositiveIntegerField(strings.DOWN_VOTE, default=0)
-    votes_result = models.IntegerField(strings.VOTE_RESULT, default=0)
 
     selected_response = models.ForeignKey('Answer', null=True, 
         related_name='is_selected_respnse_for')
@@ -73,21 +99,6 @@ class Question(BaseModel):
 
     def get_absolute_url(self):
         return '%s%s' % (self.get_base_url(), slugify(self.title))
-
-    def total_votes(self):
-        return self.up_votes + self.down_votes
-
-    def update_votes(self, commit=True):
-        """
-        Updates votes counts
-        if commit is set to True will save the questions
-        """
-        self.up_votes = self.votes.up().count()
-        self.down_votes = self.votes.down().count()
-        self.votes_result = self.up_votes - self.down_votes
-
-        if commit:
-            super(Question, self).save(*args, **kwargs)
 
     def update_answer_count(self, commit=False):
         """
@@ -113,22 +124,20 @@ class Question(BaseModel):
         super(Question, self).save(*args, **kwargs)
 
 
-class Answer(BaseModel):
+class Answer(BaseModel, BaseVotedModel):
     """
     Represents an answer to a question
     """
     question = models.ForeignKey(Question, related_name='answers')
     body = models.TextField(strings.BODY)
     body_html = models.TextField()
-    up_votes = models.PositiveIntegerField(strings.UP_VOTE, default=0)
-    down_votes = models.PositiveIntegerField(strings.DOWN_VOTE, default=0)
-    votes_result = models.IntegerField(strings.VOTE_RESULT, default=0)
 
     def __unicode__(self):
         return 'Answer to question "%s" by %s' % (self.question, self.user)
 
     def save(self, *args, **kwargs):
         self.body_html = markdown(self.body)
+        self.update_votes(commit=False)
         super(Answer, self).save(*args, **kwargs)
 
 
@@ -140,6 +149,7 @@ class Comment(BaseModel):
     body = models.TextField()
     is_awesome = models.BooleanField(default=False)
 
+
 class VoteManager(models.Manager):
     def up(self):
         """ Return up votes """
@@ -149,10 +159,11 @@ class VoteManager(models.Manager):
         """ Return up votes """
         return self.filter(direction=self.model.DOWN)
 
-class Vote(BaseModel):
+
+class BaseVote(BaseModel):
     """
     Represents an up or downvote made on a entry by a user
-    There can only be one vote per user/entry
+    There can only be one vote per user/question
     """
     UP = True
     DOWN = False
@@ -160,8 +171,19 @@ class Vote(BaseModel):
         (UP, strings.UP_VOTE),
         (DOWN, strings.DOWN_VOTE),
     )
-    question = models.ForeignKey(Question, related_name='votes')
     direction = models.BooleanField(choices=DIRECTIONS)
-
     objects = VoteManager()
+
+    class Meta:
+        abstract = True
+
+
+class QuestionVote(BaseVote):
+    object = models.ForeignKey(Question, related_name='votes')
+
+
+class AnswerVote(BaseVote):
+    object = models.ForeignKey(Answer, related_name='votes')
+
+
 

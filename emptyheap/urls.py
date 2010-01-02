@@ -38,6 +38,10 @@ urlpatterns = patterns('',
         views.ask,
         name='eh_ask'),
 
+    url(r'^questions/(?P<question_id>\d+)/(?P<answer_id>\d+)/$',
+        views.answer_vote,
+        name='answer_vote'),
+
     url(r'^questions/(?P<question_id>\d+)/',
         views.question_detail,
         name='eh_question_detail'),

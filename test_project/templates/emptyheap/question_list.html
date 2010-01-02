@@ -5,7 +5,10 @@ Welcome to Emptyheap
 {% block content %}
 <ul>
 {% for question in object_list %}
-<li><a href="{{question.get_absolute_url}}" title="{{question}}">{{question}}</a></li>
+<li>
+<a href="{{question.get_absolute_url}}" title="{{question}}">{{question}}</a>
+ {{question.answers_count}} answers
+</li>
 {% empty %}
 <li>There are no questions, <a href="{% url eh_ask %}" title="Ask a question">Be the first to ask</a></li>
 {% endfor %}
