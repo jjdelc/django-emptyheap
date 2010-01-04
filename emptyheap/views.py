@@ -17,6 +17,7 @@ from emptyheap import constants, strings
 def question_detail(request, question_id):
     """
     Displays a question's detail, comments and such
+    on post, will store a new answer
     """
     question = get_object_or_404(Question, pk=question_id)
 
@@ -24,7 +25,7 @@ def question_detail(request, question_id):
     if 'order_by' in request.REQUEST:
         order_by = request.REQUEST['order_by']
         if order_by in ('date'):
-            ordering = 'added_on'
+            ordering = '-added_on'
 
     form = AnswerForm()
     if request.method == 'POST':
@@ -76,28 +77,49 @@ def tag_detail(request, tag_name):
     return object_list(request, TaggedItem.objects.get_by_model(Question, tag))
 
 
-@login_required
-@require_http_methods(['POST'])
-def answer_vote(request, question_id, answer_id):
+class ObjectVoteView(object_model, vote_model):
     """
-    This endpoint should be reached via POST to vote on a specific answer
-    There is only one vote allowed per user/answer
-    if the user hasn't voted on the anwer yet, then set it. If the user has
-    alerady voted on the answer, either remove the vote if it has the same
-    value, otherwise change the vote's value
+    Returns a view to vote on an object specified by object_model
+    Object model should inherit from BaseVotedModel
+
+    When configuring the URL for these views, the named groups should be
+    named as the the lookup param used on the ORM
+
     """
-    answer = get_object_or_404(Answer, question__id=question_id, id=answer_id)
-    if not 'direction' in request.POST:
-        return HttpResponseBadRequest()
 
-    form = VoteForm(request.POST)
-    if form.is_valid():
-        vote = form.process_vote(answer, request.user, AnswerVote)
-        answer.save() # do this to update counts
-        request.user.message_set.create(message=strings.VOTE_CASTED)
-    else:
-        return HttpResponseBadRequest()
+    def get_object(self, **kwargs):
+        """
+        This method should return the instance based on the values
+        recieved from the urlconf
 
-    return HttpResponseRedirect(answer.question.get_absolute_url())
+        by default it will lookup the named parameters as the 
+        filter lookup params
+        """
+        return get_object_or_404(object_model, **kwargs)
 
+    @login_required
+    @require_http_methods(['POST'])
+    def object_vote(request, **kwargs):
+        """
+        This endpoint should be reached via POST to vote on a specific answer
+        There is only one vote allowed per user/answer
+        if the user hasn't voted on the anwer yet, then set it. If the user has
+        alerady voted on the answer, either remove the vote if it has the same
+        value, otherwise change the vote's value
+        """
+        object = self.get_object(**kwargs)
 
+        if not 'direction' in request.POST:
+            return HttpResponseBadRequest()
+
+        form = VoteForm(request.POST)
+        if form.is_valid():
+            vote = form.process_vote(object, request.user, vote_model)
+            object.save() # do this to update counts
+            request.user.message_set.create(message=strings.VOTE_CASTED)
+        else:
+            return HttpResponseBadRequest()
+
+        return HttpResponseRedirect(object.get_absolute_url())
+
+    return object_vote

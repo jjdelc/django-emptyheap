@@ -98,7 +98,7 @@ class Question(BaseModel, BaseVotedModel):
         })
 
     def get_absolute_url(self):
-        return '%s%s' % (self.get_base_url(), slugify(self.title))
+        return '%s%s/' % (self.get_base_url(), slugify(self.title))
 
     def update_answer_count(self, commit=False):
         """
@@ -134,6 +134,9 @@ class Answer(BaseModel, BaseVotedModel):
 
     def __unicode__(self):
         return 'Answer to question "%s" by %s' % (self.question, self.user)
+
+    def get_absolute_url(self):
+        return '%s#answer-%s' % (self.question.get_absolute_url(), self.id)
 
     def save(self, *args, **kwargs):
         self.body_html = markdown(self.body)

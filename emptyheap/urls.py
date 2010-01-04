@@ -6,7 +6,7 @@ from django.views.generic.simple import direct_to_template
 from tagging.models import Tag
 
 from emptyheap import views
-from emptyheap.models import Question
+from emptyheap.models import Question, Answer, QuestionVote, AnswerVote
 
 urlpatterns = patterns('',
     url(r'^$',
@@ -38,9 +38,13 @@ urlpatterns = patterns('',
         views.ask,
         name='eh_ask'),
 
-    url(r'^questions/(?P<question_id>\d+)/(?P<answer_id>\d+)/$',
-        views.answer_vote,
-        name='answer_vote'),
+    url(r'^questions/(?P<question__id>\d+)/(?P<id>\d+)/$',
+        views.vote_on_object(Answer, AnswerVote),
+        name='eh_answer_vote'),
+
+    url(r'^questions/(?P<id>\d+)/vote/',
+        views.vote_on_object(Question, QuestionVote),
+        name='eh_question_vote'),
 
     url(r'^questions/(?P<question_id>\d+)/',
         views.question_detail,
