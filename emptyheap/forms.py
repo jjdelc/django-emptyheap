@@ -2,12 +2,13 @@
 
 from django import forms
 
-from emptyheap.models import Question, Answer, BaseVote
+from emptyheap.models import Question, Answer, Vote
+from emptyheap import strings
 
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
-        fields = ('title', 'body', 'tags')
+        fields = ('title', 'body', 'tags', 'is_conversation')
 
     def save(self, user):
         self.instance.user = user
@@ -26,17 +27,9 @@ class AnswerForm(forms.ModelForm):
 
 
 class VoteForm(forms.Form):
-    direction = forms.CharField()
+    direction = forms.BooleanField(required=False)
 
-    def clean_direction(self):
-        value = self.cleaned_data['direction']
-        try:
-            return ['down', 'up'].index(value.lower())
-        except ValueError:
-            raise forms.ValidationError(strings.INVALID_VOTE)
-
-
-    def process_vote(self, object, user, vote_model):
+    def process_vote(self, object, user):
         """
         Will process the vote on the object
         """
@@ -49,12 +42,29 @@ class VoteForm(forms.Form):
             else:
                 vote.direction = direction
                 vote.save()
-        except vote_model.DoesNotExist:
+        except Vote.DoesNotExist:
             # The user hasn't voted, then create the vote
             vote = object.votes.create(
                 direction=direction,
-                user=user
+                user=user,
+                object=object
             )
 
         return vote
             
+class CommentForm(forms.Form):
+    body = forms.CharField(widget=forms.Textarea())
+
+    def save(self, object, user):
+        """
+        Adds a new comment associated to the object
+        """
+        body = self.cleaned_data['body']
+
+        comment = Comment.objects.create(
+            object=object,
+            user=user,
+        )
+        return comment
+
+

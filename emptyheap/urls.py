@@ -1,12 +1,12 @@
 # -*- coding: utf 8 -*-
-from django.conf.urls.defaults import url, patterns
+from django.conf.urls.defaults import url, patterns, include
 from django.views.generic.list_detail import object_list
 from django.views.generic.simple import direct_to_template
 
 from tagging.models import Tag
 
 from emptyheap import views
-from emptyheap.models import Question, Answer, QuestionVote, AnswerVote
+from emptyheap.models import Question, Answer
 
 urlpatterns = patterns('',
     url(r'^$',
@@ -38,15 +38,13 @@ urlpatterns = patterns('',
         views.ask,
         name='eh_ask'),
 
-    url(r'^questions/(?P<question__id>\d+)/(?P<id>\d+)/$',
-        views.vote_on_object(Answer, AnswerVote),
-        name='eh_answer_vote'),
+    url(r'^questions/(?P<question__id>\d+)/(?P<id>\d+)/vote/',
+        include(views.ObjectVoteView(Answer).urls)),
 
-    url(r'^questions/(?P<id>\d+)/vote/',
-        views.vote_on_object(Question, QuestionVote),
-        name='eh_question_vote'),
+    url(r'^questions/(?P<id>\d+)/vote/', 
+        include(views.ObjectVoteView(Question).urls)),
 
-    url(r'^questions/(?P<question_id>\d+)/',
+    url(r'^questions/(?P<question_id>\d+)/', # Note that it doesnt end in $ for slug
         views.question_detail,
         name='eh_question_detail'),
 )

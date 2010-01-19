@@ -2,6 +2,8 @@
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes import generic
 from django.template.defaultfilters import slugify
 
 from markdown import markdown
@@ -28,6 +30,7 @@ class BaseVotedModel(models.Model):
     up_votes = models.PositiveIntegerField(strings.UP_VOTE, default=0)
     down_votes = models.PositiveIntegerField(strings.DOWN_VOTE, default=0)
     votes_result = models.IntegerField(strings.VOTE_RESULT, default=0)
+    votes = generic.GenericRelation('Vote')
 
     class Meta:
         abstract = True
@@ -57,6 +60,10 @@ class Reputation(models.Model):
     total_votes = models.PositiveIntegerField(default=0)
 
 
+class Category(models.Model):
+    """ Represnts a category of questions, like a subforum """
+
+
 class QuestionManager(models.Manager):
     def get_top_questions(self):
         """
@@ -75,6 +82,15 @@ class Question(BaseModel, BaseVotedModel):
     """
     Represents a question 
     """
+    BEST_ANSWER = 0
+    CONVERSATION = 1
+    TYPES = (
+        (BEST_ANSWER, strings.BEST_ANSWER),
+        (CONVERSATION, strings.CONVERSATION)
+    )
+    
+    type = models.PositiveSmallIntegerField(choices=TYPES, default=BEST_ANSWER)
+
     title = models.CharField(strings.QUESTION, max_length=128)
     body = models.TextField(strings.BODY)
     body_html = models.TextField()
@@ -87,6 +103,8 @@ class Question(BaseModel, BaseVotedModel):
     tags = TagField()
 
     objects = QuestionManager()
+
+    is_conversation = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.title
@@ -148,9 +166,11 @@ class Comment(BaseModel):
     """
     Represents a comment made on a entry by a user
     """
-    answer = models.ForeignKey(Answer, related_name='coments')
     body = models.TextField()
-    is_awesome = models.BooleanField(default=False)
+
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    object = generic.GenericForeignKey()
 
 
 class VoteManager(models.Manager):
@@ -163,7 +183,7 @@ class VoteManager(models.Manager):
         return self.filter(direction=self.model.DOWN)
 
 
-class BaseVote(BaseModel):
+class Vote(BaseModel):
     """
     Represents an up or downvote made on a entry by a user
     There can only be one vote per user/question
@@ -177,16 +197,8 @@ class BaseVote(BaseModel):
     direction = models.BooleanField(choices=DIRECTIONS)
     objects = VoteManager()
 
-    class Meta:
-        abstract = True
-
-
-class QuestionVote(BaseVote):
-    object = models.ForeignKey(Question, related_name='votes')
-
-
-class AnswerVote(BaseVote):
-    object = models.ForeignKey(Answer, related_name='votes')
-
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    object = generic.GenericForeignKey()
 
 

@@ -5,8 +5,15 @@
 <blockquote class="question-body">
     {{object.body_html|safe}}
 </blockquote>
-<form action="{% url eh_question_vote object.id %}" method="POST">
-    <p><input type="submit" name="direction" value="Up"/> {{object.votes_result}} <input type="submit" name="direction" value="Down"/> {% if object|has_upvote:user %}You've voted up{% else %}{% if object|has_downvote:user %}You've voted down{% endif %}{% endif %}</p>
+    <p>
+    <form action="{% url question_upvote object.id %}" method="POST">
+    <input type="submit" name="direction" value="Up"/> 
+    </form>
+    {{object.votes_result}} 
+    <form action="{% url question_downvote object.id %}" method="POST">
+    <input type="submit" name="direction" value="Down"/> 
+    </form>
+    {% if object|has_upvote:user %}You've voted up{% else %}{% if object|has_downvote:user %}You've voted down{% endif %}{% endif %}</p>
 </form>
 <h3>Answers</h3>
 <p>Order answers by <a href="{{object.get_absolute_url}}" title="Show answers by number of votes">Votes</a>, <a href="{{object.get_absolute_url}}?order_by=date" title="In posting date">Date</a></p>
